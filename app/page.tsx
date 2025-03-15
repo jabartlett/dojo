@@ -18,8 +18,13 @@ interface NotificationState {
 export default function Home() {
   const [notificationState, setNotificationState] = React.useState<NotificationState>({ success: false, error: false, warning: false, info: false, none: false });
 
-  const onToggle = (flag: string) => setNotificationState({ ...notificationState, [flag]: !notificationState[flag] });
+  type NotificationKeys = keyof NotificationState;
 
+  const onToggle = (flag: NotificationKeys) => setNotificationState({ 
+    ...notificationState, 
+    [flag]: !notificationState[flag] 
+  });
+  
   const { success, error, warning, info, none } = notificationState;
   return (
     <div>
