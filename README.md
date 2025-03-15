@@ -1,4 +1,4 @@
-This project is my submission for the Kendo UI Dev.to hackathon! It implements Kendo UI components and WebRTC.
+This project is my submission for the Kendo UI Dev.to hackathon! It implements Kendo UI components and WebRTC. Don't forget to create the hackathon submission post (note to myself!)
 
 https://dev.to/challenges/kendoreact
 
