@@ -1,12 +1,12 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest } from 'next/server';
 import { Server as SocketIOServer } from 'socket.io';
 
 // This prevents the server from initializing multiple times
 let io: SocketIOServer;
 
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: NextRequest, res: any) {
   if (!io) {
-    // Cast `res.socket` to any to access the `server` property
+    // Cast `res` to any to access the `socket` property
     const httpServer = (res.socket as any).server;
 
     io = new SocketIOServer(httpServer, {
@@ -55,5 +55,6 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 
-  res.status(200).send('Socket.io server is running');
+  // Send response
+  return new Response('Socket.io server is running', { status: 200 });
 }
