@@ -1,14 +1,17 @@
 import { NextRequest } from 'next/server';
 import { Server as SocketIOServer } from 'socket.io';
 
-// This prevents the server from initializing multiple times
-let io: SocketIOServer;
+// Create a global variable for the Socket.IO instance to prevent duplicate initialization
+let io: SocketIOServer | undefined;
 
-export async function GET(req: NextRequest, res: any) {
+export async function GET(req: NextRequest) {
+  // Safely access the Node.js server instance
+  const httpServer = (globalThis as any).__NEXT_HTTP_SERVER__;
+  if (!httpServer) {
+    throw new Error('HTTP server is unavailable.');
+  }
+
   if (!io) {
-    // Cast `res` to any to access the `socket` property
-    const httpServer = (res.socket as any).server;
-
     io = new SocketIOServer(httpServer, {
       path: '/api/socket',
       addTrailingSlash: false,
@@ -55,6 +58,5 @@ export async function GET(req: NextRequest, res: any) {
     });
   }
 
-  // Send response
   return new Response('Socket.io server is running', { status: 200 });
 }
