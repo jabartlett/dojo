@@ -98,7 +98,7 @@ export default function WebRTCClient() {
         },
         messageQueue: [],
     });
-    
+
 
     const $peer = useRef<PeerState>({
         connection:
@@ -107,7 +107,7 @@ export default function WebRTCClient() {
         mediaTracks: {},
         features: {},
     });
-    
+
 
     // Initialize the video effects
     useEffect(() => {
@@ -613,10 +613,24 @@ export default function WebRTCClient() {
     };
 
     // Join call function
+    // const joinCall = () => {
+    //     socketRef.current = io(`/${namespace}`, {
+    //         path: '/api/socket',
+    //         autoConnect: true,
+    //     });
+
+    //     registerSocketCallbacks();
+    // };
+
+    // Replace the existing joinCall function with this
     const joinCall = () => {
-        socketRef.current = io(`/${namespace}`, {
+        // Use the GitHub Codespace URL with port 3001
+        const serverUrl = "https://verbose-couscous-g476v6r9pp5wcwx5x-3001.app.github.dev";
+
+        socketRef.current = io(`${serverUrl}/${namespace}`, {
             path: '/api/socket',
             autoConnect: true,
+            transports: ['websocket'], // Force WebSocket transport
         });
 
         registerSocketCallbacks();
@@ -797,4 +811,5 @@ export default function WebRTCClient() {
                 </button>
             </footer>
         </div>
-    )};
+    )
+};

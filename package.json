@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "server": "node server.js --port:3001"
   },
   "dependencies": {
     "@progress/kendo-react-animation": "^10.0.0",
