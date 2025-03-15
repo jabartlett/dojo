@@ -90,7 +90,7 @@ export default function WebRTCClient() {
         isIgnoringOffer: false,
         isSettingRemoteAnswerPending: false,
         mediaConstraints: { audio: true, video: true },
-        mediaStream: new MediaStream(),
+        mediaStream: typeof window !== 'undefined' ? new MediaStream() : ({} as MediaStream), // Safe check for client-side
         mediaTracks: {},
         features: {
             audio: false,
@@ -98,13 +98,16 @@ export default function WebRTCClient() {
         },
         messageQueue: [],
     });
+    
 
     const $peer = useRef<PeerState>({
-        connection: new RTCPeerConnection($self.current.rtcConfig || undefined),
-        mediaStream: new MediaStream(),
+        connection:
+            typeof window !== 'undefined' ? new RTCPeerConnection($self.current.rtcConfig || undefined) : ({} as RTCPeerConnection), // Safe check for client-side
+        mediaStream: typeof window !== 'undefined' ? new MediaStream() : ({} as MediaStream), // Client-side check
         mediaTracks: {},
         features: {},
     });
+    
 
     // Initialize the video effects
     useEffect(() => {

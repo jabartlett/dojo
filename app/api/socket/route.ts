@@ -1,15 +1,14 @@
-// app/api/socket/route.ts
-import { NextApiRequest } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 import { Server as SocketIOServer } from 'socket.io';
-import { NextApiResponseServerIO } from '@/types/next';
 
 // This prevents the server from initializing multiple times
 let io: SocketIOServer;
 
-export async function GET(req: Request, res: Response) {
+export async function GET(req: NextApiRequest, res: NextApiResponse) {
   if (!io) {
-    // @ts-ignore - NextApiResponse is not compatible with Response
-    const httpServer = res.socket?.server;
+    // Cast `res.socket` to any to access the `server` property
+    const httpServer = (res.socket as any).server;
+
     io = new SocketIOServer(httpServer, {
       path: '/api/socket',
       addTrailingSlash: false,
@@ -56,5 +55,5 @@ export async function GET(req: Request, res: Response) {
     });
   }
 
-  return new Response('Socket.io server is running', { status: 200 });
+  res.status(200).send('Socket.io server is running');
 }
