@@ -12,6 +12,8 @@
   "dependencies": {
     "@progress/kendo-react-animation": "^10.0.0",
     "@progress/kendo-react-buttons": "^10.0.0",
+    "@progress/kendo-react-conversational-ui": "^10.0.0",
+    "@progress/kendo-react-inputs": "^10.0.0",
     "@progress/kendo-react-intl": "^10.0.0",
     "@progress/kendo-react-notification": "^10.0.0",
     "@progress/kendo-theme-default": "^10.3.1",
