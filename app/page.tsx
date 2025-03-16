@@ -7,6 +7,7 @@ import { Fade } from '@progress/kendo-react-animation';
 import { Button } from '@progress/kendo-react-buttons';
 import '@progress/kendo-theme-default/dist/all.css';
 import WebRTCClient from '@/components/WebRTCClient';
+import AppHeader from '@/components/AppHeader';
 
 interface NotificationState {
   success: boolean,
@@ -29,10 +30,9 @@ export default function Home() {
   const { success, error, warning, info, none } = notificationState;
   return (
     <div>
-      <h1>Kendo WebRTC</h1>
+      <AppHeader />
       <WebRTCClient />
-
-      <Button
+      {/* <Button
         type="button"
         onClick={() => onToggle('success')}
       >
@@ -120,7 +120,7 @@ export default function Home() {
             <span>Hanna Moos likes your status.</span>
           </Notification>}
         </Fade>
-      </NotificationGroup>
+      </NotificationGroup> */}
 
     </div>
   );
