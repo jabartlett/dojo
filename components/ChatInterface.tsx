@@ -28,7 +28,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     };
 
     return (
-        <Card className="chat-interface-container" style={{ position: 'absolute', bottom: 0, left: 0, width: '100%' }}>
+        <Card className="chat-interface-container" style={{ width: '100%' }}>
             <CardBody>
                 <form id="chat-form" onSubmit={handleSubmit}>
                     <div className="k-flex k-flex-col k-flex-md-row k-gap-2">

@@ -31,12 +31,14 @@ export const VideoStreams: React.FC<VideoStreamsProps> = ({
                 muted
                 onClick={onSelfVideoClick}
                 style={{ 
-                    position: 'absolute', 
-                    top: 0, 
-                    left: 0, 
-                    width: '20%', 
+                    width: '100%',
                     height: 'auto',
-                    zIndex: 10
+                    // position: 'absolute', 
+                    // top: 0, 
+                    // left: 0, 
+                    // width: '20%', 
+                    // height: 'auto',
+                    // zIndex: 10
                 }}
             />
             <div 

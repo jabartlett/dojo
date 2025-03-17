@@ -1,12 +1,10 @@
-// components/WebRTCClient.tsx
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, CardHeader, CardTitle } from '@progress/kendo-react-layout';
+import { Card, CardHeader, CardTitle, StackLayout } from '@progress/kendo-react-layout';
 import { Button } from '@progress/kendo-react-buttons';
 import { MediaControls } from './MediaControls';
 import { ChatInterface, ChatLog } from './ChatInterface';
-import { VideoStreams } from './VideoStreams';
 import { WebRTCService } from '@/lib/services/WebRTCService';
 
 export default function WebRTCClient() {
@@ -18,12 +16,63 @@ export default function WebRTCClient() {
     const [audioEnabled, setAudioEnabled] = useState(false);
     const [videoEnabled, setVideoEnabled] = useState(true);
     const [peerMicActive, setPeerMicActive] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     
     // Reference to our WebRTC service
     const webRTCServiceRef = useRef<WebRTCService | null>(null);
 
+    // Handle client-side mounting
+    useEffect(() => {
+        setIsMounted(true);
+        
+        // Add CSS for responsive layout
+        const style = document.createElement('style');
+        style.textContent = `
+            /* Default (mobile) */
+            .video-column {
+                width: 100% !important;
+            }
+            .chat-column {
+                width: 100% !important;
+            }
+            .layout-container {
+                flex-direction: column !important;
+            }
+            
+            /* Tablet */
+            @media (min-width: 768px) {
+                .video-column {
+                    width: 33% !important;
+                }
+                .chat-column {
+                    width: 67% !important;
+                }
+                .layout-container {
+                    flex-direction: row !important;
+                }
+            }
+            
+            /* Desktop */
+            @media (min-width: 1024px) {
+                .video-column {
+                    width: 25% !important;
+                }
+                .chat-column {
+                    width: 75% !important;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        return () => {
+            document.head.removeChild(style);
+        };
+    }, []);
+
     // Prepare namespace from URL hash or create a new one
     useEffect(() => {
+        if (!isMounted) return;
+        
         const prepareNamespace = (hash: string, setLocation: boolean): string => {
             let ns = hash.replace(/^#/, ''); // remove # from the hash
             if (/^[0-9]{7}$/.test(ns)) {
@@ -39,12 +88,11 @@ export default function WebRTCClient() {
         const ns = prepareNamespace(window.location.hash, true);
         setNamespace(ns);
         webRTCServiceRef.current = new WebRTCService(ns);
-    }, []);
+    }, [isMounted]);
 
-  // components/WebRTCClient.tsx (continued)
     // Initialize WebRTC service and request user media
     useEffect(() => {
-        if (!webRTCServiceRef.current) return;
+        if (!isMounted || !webRTCServiceRef.current) return;
         
         const webRTCService = webRTCServiceRef.current;
         
@@ -80,7 +128,7 @@ export default function WebRTCClient() {
         return () => {
             clearInterval(statusCheckInterval);
         };
-    }, []);
+    }, [isMounted]);
 
     // Handle call button click
     const handleCallButton = () => {
@@ -180,27 +228,69 @@ export default function WebRTCClient() {
             </Card>
 
             <div className="k-my-4">
-                <VideoStreams
-                    selfVideoRef={selfVideoRef}
-                    peerVideoRef={peerVideoRef}
-                    onSelfVideoClick={handleSelfVideoClick}
-                    peerHasMic={peerMicActive}
-                />
-            </div>
+                <div className="layout-container" style={{ display: 'flex', gap: '20px' }}>
+                    {/* Video streams column */}
+                    <div className="video-column">
+                        <StackLayout orientation="vertical" gap={20}>
+                            {/* Peer video */}
+                            <div className="video-container">
+                                <video
+                                    ref={peerVideoRef}
+                                    id="peer"
+                                    autoPlay
+                                    playsInline
+                                    muted={false}
+                                    style={{ width: '100%', height: 'auto' }}
+                                />
+                                {peerMicActive && (
+                                    <div className="mic-indicator">
+                                        <span className="k-icon k-i-microphone"></span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Self video */}
+                            <div className="video-container">
+                                <video
+                                    ref={selfVideoRef}
+                                    id="self"
+                                    autoPlay
+                                    playsInline
+                                    muted={true}
+                                    onClick={handleSelfVideoClick}
+                                    style={{ width: '100%', height: 'auto' }}
+                                />
+                            </div>
+                            
+                            {/* Media controls */}
+                            <div>
+                                <MediaControls
+                                    audioEnabled={audioEnabled}
+                                    videoEnabled={videoEnabled}
+                                    onToggleMic={handleToggleMic}
+                                    onToggleCam={handleToggleCam}
+                                />
+                            </div>
+                        </StackLayout>
+                    </div>
 
-            <MediaControls
-                audioEnabled={audioEnabled}
-                videoEnabled={videoEnabled}
-                onToggleMic={handleToggleMic}
-                onToggleCam={handleToggleCam}
-            />
-
-            <div className="chat-container k-mt-4" style={{ position: 'relative', height: '300px' }}>
-                <ChatLog chatLogRef={chatLogRef} />
-                <ChatInterface
-                    onSendMessage={handleSendMessage}
-                    onSendImage={handleSendImage}
-                />
+                    {/* Chat column */}
+                    <div className="chat-column">
+                        <div className="chat-container" style={{ height: '600px' }}>
+                            <StackLayout orientation="vertical" gap={0}>
+                                <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto' }}>
+                                    <ChatLog chatLogRef={chatLogRef} />
+                                </div>
+                                <div>
+                                    <ChatInterface
+                                        onSendMessage={handleSendMessage}
+                                        onSendImage={handleSendImage}
+                                    />
+                                </div>
+                            </StackLayout>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

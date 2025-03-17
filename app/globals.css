@@ -3,7 +3,7 @@
 /* styles/webrtc.css */
 
 .webrtc-container {
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin: 0 auto;
 }
 
@@ -12,33 +12,36 @@
   width: 100%;
   background-color: #000;
   border-radius: 8px;
-  overflow: hidden;
-  aspect-ratio: 16/9;
+  /* overflow: hidden;
+  aspect-ratio: 16/9; */
 }
 
 #peer {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50px;
 }
 
 #self {
-  position: absolute;
+  width: 100%;
+  height: 100%;
+  /* position: absolute;
   top: 0;
   left: 0;
   width: 20%;
-  height: auto;
+  height: auto; */
   object-fit: cover;
-  border: 2px solid #fff;
-  border-radius: 4px;
-  z-index: 10;
-  transition: all 0.3s ease;
+  /* border: 2px solid #fff; */
+  border-radius: 50px;
+  /* z-index: 10;
+  transition: all 0.3s ease; */
 }
 
-#self:hover {
+/* #self:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
+} */
 
 #chat-log {
   list-style-type: none;
