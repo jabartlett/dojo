@@ -15,21 +15,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 }) => {
   const chatInputRef = useRef<any>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!chatInputRef.current) return;
-
-    const message = chatInputRef.current.value;
-    if (message.trim() === '') return;
+    if (inputValue.trim() === '') return;
 
     setIsTyping(true);
     
     // Send the message
-    onSendMessage(message);
+    onSendMessage(inputValue);
     
     // Clear the input
-    chatInputRef.current.value = '';
+    setInputValue('');
     
     // Reset typing indicator after a short delay
     setTimeout(() => setIsTyping(false), 500);
@@ -42,7 +40,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <div className="k-flex k-flex-col k-flex-md-row k-gap-2" style={{ display: 'flex' }}>
             <div className="k-flex k-flex-row k-gap-2 k-flex-grow" style={{ display: 'flex' }}>
               <Input
-                ref={chatInputRef}
+                value={inputValue}
+                onChange={(e: any) => setInputValue(e.target.value)}
                 className="k-flex-grow"
                 placeholder="Ask the AI assistant..."
                 disabled={isTyping}

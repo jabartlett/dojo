@@ -2,11 +2,11 @@ import { io, Socket } from 'socket.io-client';
 import { SelfState, PeerState, Message, VideoFX } from '../types';
 
 interface LLMResponse {
-  response: string;
-  metadata?: {
-    timestamp: string;
-    model: string;
-  };
+    response: string;
+    metadata?: {
+        timestamp: string;
+        model: string;
+    };
 }
 
 export class WebRTCService {
@@ -16,11 +16,11 @@ export class WebRTCService {
     private namespace: string;
     private chatLogElement: HTMLUListElement | null = null;
     // Add chat history for LLM context
-    private chatHistory: Array<{role: 'user' | 'assistant', content: string}> = [];
+    private chatHistory: Array<{ role: 'user' | 'assistant', content: string }> = [];
 
     constructor(namespace: string) {
         this.namespace = namespace;
-        
+
         // Initialize self state
         this.selfState = {
             rtcConfig: null,
@@ -41,8 +41,8 @@ export class WebRTCService {
 
         // Initialize peer state
         this.peerState = {
-            connection: typeof window !== 'undefined' 
-                ? new RTCPeerConnection(this.selfState.rtcConfig || undefined) 
+            connection: typeof window !== 'undefined'
+                ? new RTCPeerConnection(this.selfState.rtcConfig || undefined)
                 : ({} as RTCPeerConnection),
             mediaStream: typeof window !== 'undefined' ? new MediaStream() : ({} as MediaStream),
             mediaTracks: {},
@@ -108,7 +108,7 @@ export class WebRTCService {
         } else {
             this.selfState.mediaStream.removeTrack(this.selfState.mediaTracks.video);
         }
-        
+
         return enabled_state;
     }
 
@@ -141,7 +141,7 @@ export class WebRTCService {
         if (this.peerState.connection.connectionState !== 'connected') return;
         const filterName = `filter-${filter}`;
         const filter_channel = this.peerState.connection.createDataChannel(filterName);
-        
+
         filter_channel.onclose = () => {
             console.log(`Remote peer has closed the ${filterName} data channel`);
         };
@@ -159,35 +159,38 @@ export class WebRTCService {
     }
 
     // New method to send message with LLM processing
+    // ...existing code...
+
+    // New method to send message with LLM processing
     async sendMessageWithLLM(message: string): Promise<void> {
         try {
             // First, send the user's message as normal
             this.sendTextMessage(message);
-            
+
             // Store in chat history
             this.chatHistory.push({ role: 'user', content: message });
-            
+
             // Keep chat history at a reasonable size (last 10 messages)
             if (this.chatHistory.length > 10) {
                 this.chatHistory = this.chatHistory.slice(-10);
             }
-            
+
             // Get LLM response
             const llmResponse = await this.fetchLLMResponse(message);
-            
+
             // Create a message object for the LLM response
             const llmMessage: Message = {
                 text: llmResponse,
                 timestamp: Date.now(),
                 isLLM: true  // Add a flag to identify this as an LLM response
             };
-            
+
             // Display LLM response locally
             this.appendMessage('llm', llmMessage);
-            
+
             // Store in chat history
             this.chatHistory.push({ role: 'assistant', content: llmResponse });
-            
+
             // Send LLM response to peer
             this.sendOrQueueMessage(llmMessage);
         } catch (error) {
@@ -202,6 +205,8 @@ export class WebRTCService {
         }
     }
 
+
+
     // Method to fetch response from LLM API endpoint
     private async fetchLLMResponse(message: string): Promise<string> {
         try {
@@ -215,11 +220,11 @@ export class WebRTCService {
                     chatHistory: this.chatHistory,
                 }),
             });
-            
+
             if (!response.ok) {
                 throw new Error(`API error: ${response.status}`);
             }
-            
+
             const data: LLMResponse = await response.json();
             return data.response;
         } catch (error) {
@@ -227,6 +232,7 @@ export class WebRTCService {
             throw error;
         }
     }
+
 
     sendImageFile(file: File): void {
         const metadata = {
@@ -387,7 +393,7 @@ export class WebRTCService {
                     // Add to chat history
                     this.chatHistory.push({ role: 'user', content: message.text });
                 }
-                
+
                 // Prepare a response and append an incoming message
                 const response = {
                     id: message.timestamp,
