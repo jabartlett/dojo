@@ -196,7 +196,8 @@ export default function WebRTCClient() {
     // Handle sending text message
     const handleSendMessage = (message: string) => {
         if (!webRTCServiceRef.current) return;
-        webRTCServiceRef.current.sendTextMessage(message);
+        // webRTCServiceRef.current.sendTextMessage(message);
+        webRTCServiceRef.current.sendMessageWithLLM(message);
     };
 
     // Handle sending image

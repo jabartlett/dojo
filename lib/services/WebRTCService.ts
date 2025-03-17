@@ -1,6 +1,13 @@
-// services/WebRTCService.ts
 import { io, Socket } from 'socket.io-client';
 import { SelfState, PeerState, Message, VideoFX } from '../types';
+
+interface LLMResponse {
+  response: string;
+  metadata?: {
+    timestamp: string;
+    model: string;
+  };
+}
 
 export class WebRTCService {
     private socket: Socket | null = null;
@@ -8,6 +15,8 @@ export class WebRTCService {
     private peerState: PeerState;
     private namespace: string;
     private chatLogElement: HTMLUListElement | null = null;
+    // Add chat history for LLM context
+    private chatHistory: Array<{role: 'user' | 'assistant', content: string}> = [];
 
     constructor(namespace: string) {
         this.namespace = namespace;
@@ -138,6 +147,7 @@ export class WebRTCService {
         };
     }
 
+    // Original sendTextMessage method
     sendTextMessage(text: string): void {
         const message: Message = {
             text: text,
@@ -146,6 +156,76 @@ export class WebRTCService {
 
         this.appendMessage('self', message);
         this.sendOrQueueMessage(message);
+    }
+
+    // New method to send message with LLM processing
+    async sendMessageWithLLM(message: string): Promise<void> {
+        try {
+            // First, send the user's message as normal
+            this.sendTextMessage(message);
+            
+            // Store in chat history
+            this.chatHistory.push({ role: 'user', content: message });
+            
+            // Keep chat history at a reasonable size (last 10 messages)
+            if (this.chatHistory.length > 10) {
+                this.chatHistory = this.chatHistory.slice(-10);
+            }
+            
+            // Get LLM response
+            const llmResponse = await this.fetchLLMResponse(message);
+            
+            // Create a message object for the LLM response
+            const llmMessage: Message = {
+                text: llmResponse,
+                timestamp: Date.now(),
+                isLLM: true  // Add a flag to identify this as an LLM response
+            };
+            
+            // Display LLM response locally
+            this.appendMessage('llm', llmMessage);
+            
+            // Store in chat history
+            this.chatHistory.push({ role: 'assistant', content: llmResponse });
+            
+            // Send LLM response to peer
+            this.sendOrQueueMessage(llmMessage);
+        } catch (error) {
+            console.error('Error sending message with LLM:', error);
+            // Handle failure - maybe display error message
+            const errorMessage: Message = {
+                text: 'Failed to get AI response. Please try again.',
+                timestamp: Date.now(),
+                isSystem: true
+            };
+            this.appendMessage('system', errorMessage);
+        }
+    }
+
+    // Method to fetch response from LLM API endpoint
+    private async fetchLLMResponse(message: string): Promise<string> {
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message,
+                    chatHistory: this.chatHistory,
+                }),
+            });
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status}`);
+            }
+            
+            const data: LLMResponse = await response.json();
+            return data.response;
+        } catch (error) {
+            console.error('Error fetching LLM response:', error);
+            throw error;
+        }
     }
 
     sendImageFile(file: File): void {
@@ -197,7 +277,6 @@ export class WebRTCService {
         this.addStreamingMedia();
     }
 
-    // services/WebRTCService.ts (continued)
     private registerRtcCallbacks(): void {
         this.peerState.connection.onconnectionstatechange = () => {
             const connection_state = this.peerState.connection.connectionState;
@@ -295,13 +374,26 @@ export class WebRTCService {
         this.peerState.chatChannel.onmessage = (event: MessageEvent) => {
             const message = JSON.parse(event.data);
             if (!message.id) {
+                // Check if it's an LLM message
+                if (message.isLLM) {
+                    this.appendMessage('peer-llm', message);
+                    // Add to chat history
+                    this.chatHistory.push({ role: 'assistant', content: message.text });
+                } else if (message.isSystem) {
+                    this.appendMessage('system', message);
+                } else {
+                    // Regular peer message
+                    this.appendMessage('peer', message);
+                    // Add to chat history
+                    this.chatHistory.push({ role: 'user', content: message.text });
+                }
+                
                 // Prepare a response and append an incoming message
                 const response = {
                     id: message.timestamp,
                     timestamp: Date.now(),
                 };
                 this.sendOrQueueMessage(response);
-                this.appendMessage('peer', message);
             } else {
                 // Handle an incoming response
                 this.handleResponse(message);
@@ -481,7 +573,7 @@ export class WebRTCService {
         sent_item.classList.add(...classes);
     }
 
-    private appendMessage(sender: 'self' | 'peer', message: any, image?: Blob): void {
+    private appendMessage(sender: 'self' | 'peer' | 'llm' | 'peer-llm' | 'system', message: any, image?: Blob): void {
         if (!this.chatLogElement) return;
 
         const li = document.createElement('li');
@@ -489,13 +581,23 @@ export class WebRTCService {
         li.innerText = message.text || '';
         li.dataset.timestamp = message.timestamp.toString();
 
+        // Add specific styling for LLM responses
+        if (sender === 'llm' || sender === 'peer-llm') {
+            li.classList.add('ai-response');
+        }
+
+        // Add specific styling for system messages
+        if (sender === 'system') {
+            li.classList.add('system-message');
+        }
+
         if (image) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(image);
             img.onload = () => {
-                            URL.revokeObjectURL(img.src);
-                            this.scrollToEnd(this.chatLogElement!);
-                        };
+                URL.revokeObjectURL(img.src);
+                this.scrollToEnd(this.chatLogElement!);
+            };
             li.innerText = ''; // undefined on images
             li.classList.add('img');
             li.appendChild(img);

@@ -11,6 +11,8 @@ export interface Message {
         type: string;
     };
     file?: File | Blob;
+    isLLM?: boolean;
+    isSystem?: boolean;
 }
 
 export interface Features {
