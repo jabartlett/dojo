@@ -48,14 +48,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                 Image
                             </Button>
                         </div>
-                        {/* <Button
-                            id="chat-img-btn"
-                            type="button"
-                            onClick={onSendImage}
-                            themeColor="info"
-                        >
-                            Send an Image 📷
-                        </Button> */}
+
                     </div>
                 </form>
             </CardBody>

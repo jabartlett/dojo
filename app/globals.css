@@ -5,12 +5,12 @@
 .webrtc-container {
   /* max-width: 1200px; */
   margin: 20px auto;
-  padding: 0 20px;
+  padding: 0 10px;
 }
 
 @media (min-width: 768px) {
   .webrtc-container {
-      padding: 0 40px;
+      padding: 0 30px;
   }
 }
 

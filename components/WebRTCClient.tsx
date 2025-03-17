@@ -24,7 +24,7 @@ export default function WebRTCClient() {
     // Handle client-side mounting
     useEffect(() => {
         setIsMounted(true);
-    
+
         // Add CSS for responsive layout
         const style = document.createElement('style');
         style.textContent = `
@@ -80,7 +80,7 @@ export default function WebRTCClient() {
             }
         `;
         document.head.appendChild(style);
-    
+
         return () => {
             document.head.removeChild(style);
         };
@@ -278,7 +278,7 @@ export default function WebRTCClient() {
                                     onClick={handleSelfVideoClick}
                                     style={{ width: '100%', height: 'auto' }}
                                 />
-                                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '-35px' }}>
+                                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '-30px' }}>
                                     <MediaControls
                                         audioEnabled={audioEnabled}
                                         videoEnabled={videoEnabled}
@@ -295,16 +295,16 @@ export default function WebRTCClient() {
 
                     {/* Chat column */}
                     <div className="chat-column">
-                        <div className="chat-container" style={{ height: '600px' }}>
+                        <div className="chat-container" style={{ height: 'calc(100vh - 160px)', minHeight: '500px', marginTop: '20px' }}>
                             <StackLayout orientation="vertical" gap={0}>
-                                <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto' }}>
-                                    <ChatLog chatLogRef={chatLogRef} />
-                                </div>
                                 <div>
                                     <ChatInterface
                                         onSendMessage={handleSendMessage}
                                         onSendImage={handleSendImage}
                                     />
+                                </div>
+                                <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto' }}>
+                                    <ChatLog chatLogRef={chatLogRef} />
                                 </div>
                             </StackLayout>
                         </div>
