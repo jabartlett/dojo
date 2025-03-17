@@ -17,14 +17,14 @@ export default function WebRTCClient() {
     const [videoEnabled, setVideoEnabled] = useState(true);
     const [peerMicActive, setPeerMicActive] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
-    
+
     // Reference to our WebRTC service
     const webRTCServiceRef = useRef<WebRTCService | null>(null);
 
     // Handle client-side mounting
     useEffect(() => {
         setIsMounted(true);
-        
+    
         // Add CSS for responsive layout
         const style = document.createElement('style');
         style.textContent = `
@@ -37,6 +37,23 @@ export default function WebRTCClient() {
             }
             .layout-container {
                 flex-direction: column !important;
+            }
+            
+            /* Mobile video layout - two columns with 20px gutter */
+            @media (max-width: 767px) {
+                .video-column .k-vstack {
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                }
+                .video-container {
+                    width: calc(50% - 10px);
+                    display: inline-block;
+                    vertical-align: top;
+                }
+                .video-container:first-child {
+                    margin-right: 0px;
+                }
             }
             
             /* Tablet */
@@ -63,7 +80,7 @@ export default function WebRTCClient() {
             }
         `;
         document.head.appendChild(style);
-        
+    
         return () => {
             document.head.removeChild(style);
         };
@@ -72,7 +89,7 @@ export default function WebRTCClient() {
     // Prepare namespace from URL hash or create a new one
     useEffect(() => {
         if (!isMounted) return;
-        
+
         const prepareNamespace = (hash: string, setLocation: boolean): string => {
             let ns = hash.replace(/^#/, ''); // remove # from the hash
             if (/^[0-9]{7}$/.test(ns)) {
@@ -93,9 +110,9 @@ export default function WebRTCClient() {
     // Initialize WebRTC service and request user media
     useEffect(() => {
         if (!isMounted || !webRTCServiceRef.current) return;
-        
+
         const webRTCService = webRTCServiceRef.current;
-        
+
         // Request media access
         webRTCService.requestUserMedia().then(() => {
             // Display self video
@@ -148,7 +165,7 @@ export default function WebRTCClient() {
     // Handle toggling microphone
     const handleToggleMic = () => {
         if (!webRTCServiceRef.current) return;
-        
+
         const newState = webRTCServiceRef.current.toggleMic();
         setAudioEnabled(newState);
     };
@@ -156,7 +173,7 @@ export default function WebRTCClient() {
     // Handle toggling camera
     const handleToggleCam = () => {
         if (!webRTCServiceRef.current) return;
-        
+
         const newState = webRTCServiceRef.current.toggleCam();
         setVideoEnabled(newState);
     };
@@ -164,14 +181,14 @@ export default function WebRTCClient() {
     // Handle self video click for filters
     const handleSelfVideoClick = () => {
         if (!webRTCServiceRef.current) return;
-        
+
         const filter = webRTCServiceRef.current.cycleVideoFilter();
-        
+
         // Apply filter to self video
         if (selfVideoRef.current) {
             selfVideoRef.current.className = `filter-${filter}`;
         }
-        
+
         // Send filter to peer
         webRTCServiceRef.current.applyFilterToPeer(filter);
     };
@@ -206,7 +223,7 @@ export default function WebRTCClient() {
             // Remove appended file input element
             target.remove();
         });
-        
+
         input.click();
     };
 
@@ -220,7 +237,7 @@ export default function WebRTCClient() {
                             className="k-float-right"
                             themeColor={inCall ? "error" : "success"}
                             onClick={handleCallButton}
-                            style={{ marginLeft: "10px"}}
+                            style={{ marginLeft: "10px" }}
                         >
                             {inCall ? "Leave Call" : "Join Call"}
                         </Button>
@@ -249,9 +266,9 @@ export default function WebRTCClient() {
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Self video */}
-                            <div className="video-container">
+                            <div className="video-container" style={{ position: 'relative' }}>
                                 <video
                                     ref={selfVideoRef}
                                     id="self"
@@ -261,17 +278,18 @@ export default function WebRTCClient() {
                                     onClick={handleSelfVideoClick}
                                     style={{ width: '100%', height: 'auto' }}
                                 />
+                                <div style={{ position: 'absolute', left: 0, right: 0, bottom: '-35px' }}>
+                                    <MediaControls
+                                        audioEnabled={audioEnabled}
+                                        videoEnabled={videoEnabled}
+                                        onToggleMic={handleToggleMic}
+                                        onToggleCam={handleToggleCam}
+                                    />
+                                </div>
                             </div>
-                            
+
                             {/* Media controls */}
-                            <div>
-                                <MediaControls
-                                    audioEnabled={audioEnabled}
-                                    videoEnabled={videoEnabled}
-                                    onToggleMic={handleToggleMic}
-                                    onToggleCam={handleToggleCam}
-                                />
-                            </div>
+
                         </StackLayout>
                     </div>
 

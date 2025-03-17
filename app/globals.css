@@ -133,3 +133,35 @@ body.disconnected {
       width: 40%;
   }
 }
+
+
+.k-appbar.k-appbar-primary {
+  background-color: #121212;
+}
+
+.k-button-solid-info, .k-button-solid-info:focus, .k-button.k-button-solid-success, .k-button.k-button-solid-error, .k-button.k-button-solid-success:focus, .k-button.k-button-solid-error:focus{
+  background-color: #121212 !important;
+  border-color: #121212 !important;
+  color: #fff !important;
+  box-shadow: 0px 0px 2px 0px #121212 !important;
+}
+
+.k-button.k-button-solid-success:hover, .k-button.k-button-solid-error:hover, .k-button-solid-info:hover{
+  background-color: #1a1a1a !important;
+  border-color: #1a1a1a !important;
+  color: #fff !important;
+  box-shadow: 0px 0px 2px 0px #121212 !important;
+}
+
+.k-switch-on .k-switch-track {
+  background-color: #121212 !important;
+  border-color: #121212 !important;
+}
+
+.k-switch-on.k-focus .k-switch-track, .k-switch-on:focus .k-switch-track {
+  box-shadow: 0px 0px 2px 0px #121212 !important;
+}
+
+#chat-form .temp {
+  display: none;
+}
