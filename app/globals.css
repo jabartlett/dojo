@@ -4,7 +4,18 @@
 
 .webrtc-container {
   /* max-width: 1200px; */
-  margin: 0 auto;
+  margin: 20px auto;
+  padding: 0 20px;
+}
+
+@media (min-width: 768px) {
+  .webrtc-container {
+      padding: 0 40px;
+  }
+}
+
+.video-column {
+  margin-top: 20px;
 }
 
 .video-container {
@@ -12,6 +23,7 @@
   width: 100%;
   background-color: #000;
   border-radius: 8px;
+  
   /* overflow: hidden;
   aspect-ratio: 16/9; */
 }

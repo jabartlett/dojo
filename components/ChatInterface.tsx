@@ -31,23 +31,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
         <Card className="chat-interface-container" style={{ width: '100%' }}>
             <CardBody>
                 <form id="chat-form" onSubmit={handleSubmit}>
-                    <div className="k-flex k-flex-col k-flex-md-row k-gap-2">
-                        <div className="k-flex k-flex-row k-gap-2 k-flex-grow">
+                    <div className="k-flex k-flex-col k-flex-md-row k-gap-2" style={{ display: 'flex' }}>
+                        <div className="k-flex k-flex-row k-gap-2 k-flex-grow" style={{ display: 'flex' }}>
                             <Input
                                 ref={chatInputRef}
                                 className="k-flex-grow"
                                 placeholder="Type a message..."
                             />
                             <Button type="submit">Send</Button>
+                            <Button
+                                id="chat-img-btn"
+                                type="button"
+                                onClick={onSendImage}
+                                themeColor="info"
+                            >
+                                Send an Image 📷
+                            </Button>
                         </div>
-                        <Button
+                        {/* <Button
                             id="chat-img-btn"
                             type="button"
                             onClick={onSendImage}
                             themeColor="info"
                         >
                             Send an Image 📷
-                        </Button>
+                        </Button> */}
                     </div>
                 </form>
             </CardBody>

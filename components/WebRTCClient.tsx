@@ -220,6 +220,7 @@ export default function WebRTCClient() {
                             className="k-float-right"
                             themeColor={inCall ? "error" : "success"}
                             onClick={handleCallButton}
+                            style={{ marginLeft: "10px"}}
                         >
                             {inCall ? "Leave Call" : "Join Call"}
                         </Button>
