@@ -17,6 +17,8 @@ export class WebRTCService {
     private chatLogElement: HTMLUListElement | null = null;
     // Add chat history for LLM context
     private chatHistory: Array<{ role: 'user' | 'assistant', content: string }> = [];
+    // Track if we're waiting for an AI response
+    private isWaitingForAI: boolean = false;
 
     constructor(namespace: string) {
         this.namespace = namespace;
@@ -158,12 +160,17 @@ export class WebRTCService {
         this.sendOrQueueMessage(message);
     }
 
-    // New method to send message with LLM processing
-    // ...existing code...
-
-    // New method to send message with LLM processing
+    // Method to send message with LLM processing
     async sendMessageWithLLM(message: string): Promise<void> {
         try {
+            // Set waiting flag to prevent multiple simultaneous requests
+            if (this.isWaitingForAI) {
+                console.log('Already waiting for AI response, ignoring this request');
+                return;
+            }
+            
+            this.isWaitingForAI = true;
+
             // First, send the user's message as normal
             this.sendTextMessage(message);
 
@@ -175,8 +182,23 @@ export class WebRTCService {
                 this.chatHistory = this.chatHistory.slice(-10);
             }
 
+            // Add a "thinking" indicator
+            const thinkingId = Date.now();
+            const thinkingMessage: Message = {
+                text: 'AI assistant is thinking...',
+                timestamp: thinkingId,
+                isSystem: true
+            };
+            this.appendMessage('system', thinkingMessage);
+
             // Get LLM response
             const llmResponse = await this.fetchLLMResponse(message);
+
+            // Remove the thinking indicator
+            const thinkingElement = document.querySelector(`#chat-log *[data-timestamp="${thinkingId}"]`);
+            if (thinkingElement) {
+                thinkingElement.remove();
+            }
 
             // Create a message object for the LLM response
             const llmMessage: Message = {
@@ -193,19 +215,22 @@ export class WebRTCService {
 
             // Send LLM response to peer
             this.sendOrQueueMessage(llmMessage);
+            
+            // Reset waiting flag
+            this.isWaitingForAI = false;
         } catch (error) {
             console.error('Error sending message with LLM:', error);
-            // Handle failure - maybe display error message
+            // Handle failure - display error message
             const errorMessage: Message = {
                 text: 'Failed to get AI response. Please try again.',
                 timestamp: Date.now(),
                 isSystem: true
             };
             this.appendMessage('system', errorMessage);
+            // Reset waiting flag
+            this.isWaitingForAI = false;
         }
     }
-
-
 
     // Method to fetch response from LLM API endpoint
     private async fetchLLMResponse(message: string): Promise<string> {
@@ -232,7 +257,6 @@ export class WebRTCService {
             throw error;
         }
     }
-
 
     sendImageFile(file: File): void {
         const metadata = {
@@ -625,15 +649,15 @@ export class WebRTCService {
     }
 
     private shareFeatures(...features: string[]): void {
-        const featuresToShare: Record<string, any> = {};
+        const featureFunctions: Record<string, any> = {};
         if (!this.peerState.featuresChannel) return;
 
         features.forEach(f => {
-            featuresToShare[f] = this.selfState.features[f];
+            featureFunctions[f] = this.selfState.features[f];
         });
 
         try {
-            this.peerState.featuresChannel.send(JSON.stringify(featuresToShare));
+            this.peerState.featuresChannel.send(JSON.stringify(featureFunctions));
         } catch (e) {
             console.error('Error sending features:', e);
         }

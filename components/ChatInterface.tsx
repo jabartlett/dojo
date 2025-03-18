@@ -1,5 +1,4 @@
-// components/ChatInterface.tsx
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody } from '@progress/kendo-react-layout';
@@ -13,30 +12,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onSendMessage,
   onSendImage
 }) => {
-  const chatInputRef = useRef<any>(null);
-  const [isTyping, setIsTyping] = useState(false);
   const [inputValue, setInputValue] = useState('');
-
-  const handleSubmit = (event: React.FormEvent) => {
+  const [isTyping, setIsTyping] = useState(false);
+  
+  const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (inputValue.trim() === '') return;
 
     setIsTyping(true);
     
-    // Send the message
-    onSendMessage(inputValue);
-    
-    // Clear the input
-    setInputValue('');
-    
-    // Reset typing indicator after a short delay
-    setTimeout(() => setIsTyping(false), 500);
+    try {
+      // Send the message through the WebRTC service
+      await onSendMessage(inputValue);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      // Clear the input field after sending
+      setInputValue('');
+      setIsTyping(false);
+    }
   };
 
   return (
     <Card className="chat-interface-container" style={{ width: '100%' }}>
       <CardBody>
-        <form id="chat-form" onSubmit={handleSubmit}>
+        <form id="chat-form" onSubmit={handleFormSubmit}>
           <div className="k-flex k-flex-col k-flex-md-row k-gap-2" style={{ display: 'flex' }}>
             <div className="k-flex k-flex-row k-gap-2 k-flex-grow" style={{ display: 'flex' }}>
               <Input
@@ -48,7 +48,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               />
               <Button 
                 type="submit" 
-                disabled={isTyping}
+                disabled={isTyping || inputValue.trim() === ''}
                 themeColor="primary"
               >
                 {isTyping ? 'Sending...' : 'Send'}
@@ -72,7 +72,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
 
 export const ChatLog: React.FC<{ chatLogRef: React.RefObject<HTMLUListElement> }> = ({ chatLogRef }) => {
   return (
-    <div className="chat-log-container" style={{ marginBottom: '80px', overflowY: 'auto' }}>
+    <div className="chat-log-container" style={{ height: '100%', overflowY: 'auto' }}>
       <ul 
         id="chat-log" 
         ref={chatLogRef} 

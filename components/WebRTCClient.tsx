@@ -17,6 +17,7 @@ export default function WebRTCClient() {
     const [videoEnabled, setVideoEnabled] = useState(true);
     const [peerMicActive, setPeerMicActive] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [isProcessingMessage, setIsProcessingMessage] = useState(false);
 
     // Reference to our WebRTC service
     const webRTCServiceRef = useRef<WebRTCService | null>(null);
@@ -77,6 +78,46 @@ export default function WebRTCClient() {
                 .chat-column {
                     width: 75% !important;
                 }
+            }
+            
+            /* Chat message styling */
+            #chat-log {
+                padding: 10px;
+            }
+            #chat-log li {
+                margin-bottom: 10px;
+                padding: 10px;
+                border-radius: 8px;
+                max-width: 80%;
+                word-wrap: break-word;
+            }
+            #chat-log li.self {
+                background-color: #e7f1ff;
+                margin-left: auto;
+            }
+            #chat-log li.peer {
+                background-color: #f0f0f0;
+                margin-right: auto;
+            }
+            #chat-log li.llm, #chat-log li.peer-llm {
+                background-color: #f0f7ff;
+                border-left: 4px solid #0077cc;
+                margin-right: auto;
+            }
+            #chat-log li.system-message {
+                background-color: #f5f5f5;
+                color: #666;
+                font-style: italic;
+                margin: 5px auto;
+                text-align: center;
+                max-width: 90%;
+            }
+            #chat-log li.img {
+                padding: 5px;
+            }
+            #chat-log li.img img {
+                max-width: 100%;
+                border-radius: 6px;
             }
         `;
         document.head.appendChild(style);
@@ -194,10 +235,20 @@ export default function WebRTCClient() {
     };
 
     // Handle sending text message
-    const handleSendMessage = (message: string) => {
-        if (!webRTCServiceRef.current) return;
-        // webRTCServiceRef.current.sendTextMessage(message);
-        webRTCServiceRef.current.sendMessageWithLLM(message);
+    const handleSendMessage = async (message: string) => {
+        if (!webRTCServiceRef.current || !message.trim()) return;
+        
+        setIsProcessingMessage(true);
+        
+        try {
+            // Send the message through WebRTC with LLM processing
+            await webRTCServiceRef.current.sendMessageWithLLM(message);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            // Handle error if needed
+        } finally {
+            setIsProcessingMessage(false);
+        }
     };
 
     // Handle sending image
@@ -262,7 +313,15 @@ export default function WebRTCClient() {
                                     style={{ width: '100%', height: 'auto' }}
                                 />
                                 {peerMicActive && (
-                                    <div className="mic-indicator">
+                                    <div className="mic-indicator" style={{ 
+                                        position: 'absolute', 
+                                        bottom: '10px', 
+                                        left: '10px', 
+                                        backgroundColor: 'rgba(0,0,0,0.5)', 
+                                        color: 'white',
+                                        padding: '5px',
+                                        borderRadius: '50%'
+                                    }}>
                                         <span className="k-icon k-i-microphone"></span>
                                     </div>
                                 )}
@@ -288,26 +347,21 @@ export default function WebRTCClient() {
                                     />
                                 </div>
                             </div>
-
-                            {/* Media controls */}
-
                         </StackLayout>
                     </div>
 
                     {/* Chat column */}
                     <div className="chat-column">
-                        <div className="chat-container" style={{ height: 'calc(100vh - 160px)', minHeight: '500px', marginTop: '20px' }}>
-                            <StackLayout orientation="vertical" gap={0}>
-                                <div>
-                                    <ChatInterface
-                                        onSendMessage={handleSendMessage}
-                                        onSendImage={handleSendImage}
-                                    />
-                                </div>
-                                <div style={{ height: 'calc(100% - 80px)', overflowY: 'auto' }}>
-                                    <ChatLog chatLogRef={chatLogRef} />
-                                </div>
-                            </StackLayout>
+                        <div className="chat-container" style={{ height: 'calc(100vh - 160px)', minHeight: '500px', display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px' }}>
+                                <ChatLog chatLogRef={chatLogRef} />
+                            </div>
+                            <div>
+                                <ChatInterface
+                                    onSendMessage={handleSendMessage}
+                                    onSendImage={handleSendImage}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
