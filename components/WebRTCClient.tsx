@@ -18,6 +18,7 @@ export default function WebRTCClient() {
     const [peerMicActive, setPeerMicActive] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const [isProcessingMessage, setIsProcessingMessage] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
 
     // Reference to our WebRTC service
     const webRTCServiceRef = useRef<WebRTCService | null>(null);
@@ -234,22 +235,6 @@ export default function WebRTCClient() {
         webRTCServiceRef.current.applyFilterToPeer(filter);
     };
 
-    // Handle sending text message
-    const handleSendMessage = async (message: string) => {
-        if (!webRTCServiceRef.current || !message.trim()) return;
-        
-        setIsProcessingMessage(true);
-        
-        try {
-            // Send the message through WebRTC with LLM processing
-            await webRTCServiceRef.current.sendMessageWithLLM(message);
-        } catch (error) {
-            console.error('Error sending message:', error);
-            // Handle error if needed
-        } finally {
-            setIsProcessingMessage(false);
-        }
-    };
 
     // Handle sending image
     const handleSendImage = () => {
@@ -277,6 +262,51 @@ export default function WebRTCClient() {
         });
 
         input.click();
+    };
+
+    // Handle sending text message
+    const handleSendMessage = async (message: string) => {
+        if (!webRTCServiceRef.current || !message.trim()) return;
+
+        setIsProcessingMessage(true);
+
+        try {
+            // Send the message through WebRTC with LLM processing
+            await webRTCServiceRef.current.sendMessageWithLLM(message);
+        } catch (error) {
+            console.error('Error sending message:', error);
+            // Handle error if needed
+        } finally {
+            setIsProcessingMessage(false);
+        }
+    };
+
+    // Handle start recording
+    const handleStartRecording = () => {
+        if (!webRTCServiceRef.current) return;
+
+        try {
+            webRTCServiceRef.current.startRecording();
+            setIsRecording(true);
+        } catch (error) {
+            console.error('Error starting recording:', error);
+        }
+    };
+
+    // Handle stop recording
+    const handleStopRecording = async () => {
+        if (!webRTCServiceRef.current) return;
+
+        setIsProcessingMessage(true);
+
+        try {
+            await webRTCServiceRef.current.transcribeAndSendToLLM();
+        } catch (error) {
+            console.error('Error processing recording:', error);
+        } finally {
+            setIsRecording(false);
+            setIsProcessingMessage(false);
+        }
     };
 
     return (
@@ -313,11 +343,11 @@ export default function WebRTCClient() {
                                     style={{ width: '100%', height: 'auto' }}
                                 />
                                 {peerMicActive && (
-                                    <div className="mic-indicator" style={{ 
-                                        position: 'absolute', 
-                                        bottom: '10px', 
-                                        left: '10px', 
-                                        backgroundColor: 'rgba(0,0,0,0.5)', 
+                                    <div className="mic-indicator" style={{
+                                        position: 'absolute',
+                                        bottom: '10px',
+                                        left: '10px',
+                                        backgroundColor: 'rgba(0,0,0,0.5)',
                                         color: 'white',
                                         padding: '5px',
                                         borderRadius: '50%'
@@ -360,6 +390,10 @@ export default function WebRTCClient() {
                                 <ChatInterface
                                     onSendMessage={handleSendMessage}
                                     onSendImage={handleSendImage}
+                                    onStartRecording={handleStartRecording}
+                                    onStopRecording={handleStopRecording}
+                                    isRecording={isRecording}
+                                    isProcessing={isProcessingMessage}
                                 />
                             </div>
                         </div>

@@ -19,6 +19,9 @@ export class WebRTCService {
     private chatHistory: Array<{ role: 'user' | 'assistant', content: string }> = [];
     // Track if we're waiting for an AI response
     private isWaitingForAI: boolean = false;
+    // Audio recorder
+    private mediaRecorder: MediaRecorder | null = null;
+    private audioChunks: Blob[] = [];
 
     constructor(namespace: string) {
         this.namespace = namespace;
@@ -275,6 +278,106 @@ export class WebRTCService {
 
         this.appendMessage('self', metadata, file);
         this.sendOrQueueMessage(payload);
+    }
+
+     // New method to start recording audio
+     startRecording(): void {
+        if (!this.selfState.mediaStream) {
+            console.error('No media stream available for recording');
+            return;
+        }
+
+        // Get the audio track from the existing stream
+        const audioTracks = this.selfState.mediaStream.getAudioTracks();
+        if (audioTracks.length === 0) {
+            console.error('No audio track available in the stream');
+            return;
+        }
+
+        // Create a new MediaStream with just the audio track
+        const audioStream = new MediaStream([audioTracks[0]]);
+
+        try {
+            this.mediaRecorder = new MediaRecorder(audioStream);
+            this.audioChunks = [];
+
+            this.mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    this.audioChunks.push(event.data);
+                }
+            };
+
+            this.mediaRecorder.start();
+            console.log('Recording started');
+        } catch (error) {
+            console.error('Error starting recording:', error);
+        }
+    }
+
+    // New method to stop recording and transcribe
+    async stopRecording(): Promise<string> {
+        return new Promise((resolve, reject) => {
+            if (!this.mediaRecorder) {
+                reject('No active recording');
+                return;
+            }
+
+            this.mediaRecorder.onstop = async () => {
+                try {
+                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/webm' });
+                    const transcription = await this.transcribeAudio(audioBlob);
+                    resolve(transcription);
+                } catch (error) {
+                    reject(error);
+                }
+            };
+
+            this.mediaRecorder.stop();
+            console.log('Recording stopped');
+        });
+    }
+
+    // New method to transcribe audio
+    private async transcribeAudio(audioBlob: Blob): Promise<string> {
+        try {
+            // Create a FormData object to send the audio file
+            const formData = new FormData();
+            formData.append('audio', audioBlob);
+            
+            // Send to our API endpoint
+            const response = await fetch('/api/transcribe', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Transcription failed: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return data.text || '';
+        } catch (error) {
+            console.error('Error transcribing audio:', error);
+            throw error;
+        }
+    }
+
+    // Method to send transcribed audio directly to LLM
+    async transcribeAndSendToLLM(): Promise<void> {
+        try {
+            if (!this.mediaRecorder) {
+                throw new Error('No active recording');
+            }
+            
+            const transcription = await this.stopRecording();
+            if (transcription.trim()) {
+                // If we got a transcription, send it to the LLM
+                await this.sendMessageWithLLM(transcription);
+            }
+        } catch (error) {
+            console.error('Error with transcription or sending to LLM:', error);
+            throw error;
+        }
     }
 
     // Private methods

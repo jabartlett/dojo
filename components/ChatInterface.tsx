@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody } from '@progress/kendo-react-layout';
@@ -6,19 +6,27 @@ import { Card, CardBody } from '@progress/kendo-react-layout';
 interface ChatInterfaceProps {
   onSendMessage: (message: string) => void;
   onSendImage: () => void;
+  onStartRecording?: () => void;
+  onStopRecording?: () => void;
+  isRecording?: boolean;
+  isProcessing?: boolean;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   onSendMessage,
-  onSendImage
+  onSendImage,
+  onStartRecording,
+  onStopRecording,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (inputValue.trim() === '') return;
-
     setIsTyping(true);
     
     try {
@@ -33,36 +41,104 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
+  const startRecording = async () => {
+    try {
+      // Get audio from the existing WebRTC stream (assuming it's accessible)
+      // This should ideally come from the WebRTCService
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        await transcribeAudio(audioBlob);
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const transcribeAudio = async (audioBlob: Blob) => {
+    try {
+      setIsTyping(true);
+      
+      // Create a FormData object to send the audio file
+      const formData = new FormData();
+      formData.append('audio', audioBlob);
+      
+      // Send to our API endpoint
+      const response = await fetch('/api/transcribe', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Transcription failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      if (data.text) {
+        setInputValue(data.text);
+      }
+    } catch (error) {
+      console.error('Error transcribing audio:', error);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   return (
-    <Card className="chat-interface-container" style={{ width: '100%' }}>
+    <Card id="chat-form">
       <CardBody>
-        <form id="chat-form" onSubmit={handleFormSubmit}>
-          <div className="k-flex k-flex-col k-flex-md-row k-gap-2" style={{ display: 'flex' }}>
-            <div className="k-flex k-flex-row k-gap-2 k-flex-grow" style={{ display: 'flex' }}>
-              <Input
-                value={inputValue}
-                onChange={(e: any) => setInputValue(e.target.value)}
-                className="k-flex-grow"
-                placeholder="Ask the AI assistant..."
-                disabled={isTyping}
-              />
-              <Button 
-                type="submit" 
-                disabled={isTyping || inputValue.trim() === ''}
-                themeColor="primary"
-              >
-                {isTyping ? 'Sending...' : 'Send'}
-              </Button>
-              <Button
-                id="chat-img-btn"
-                type="button"
-                onClick={onSendImage}
-                themeColor="info"
-                disabled={isTyping}
-              >
-                Image
-              </Button>
-            </div>
+        <form onSubmit={handleFormSubmit} className="k-form k-d-flex k-gap-4">
+          <div className="k-d-flex k-gap-2 k-flex-grow">
+            <Button
+              type="button"
+              icon={isRecording ? "stop" : "microphone"}
+              themeColor={isRecording ? "error" : "primary"}
+              onClick={isRecording ? stopRecording : startRecording}
+              title={isRecording ? "Stop recording" : "Start recording"}
+              disabled={isTyping}
+            />
+            <Input 
+              value={inputValue}
+              onChange={(e:any) => setInputValue(e.target.value)}
+              className="k-flex-grow"
+              placeholder="Ask the AI assistant..."
+              disabled={isTyping || isRecording}
+            />
+            <Button 
+              type="submit" 
+              themeColor="primary" 
+              disabled={isTyping || isRecording || inputValue.trim() === ''}
+            >
+              {isTyping ? 'Sending...' : 'Send'}
+            </Button>
+            <Button 
+              type="button" 
+              icon="image" 
+              onClick={onSendImage} 
+              disabled={isTyping || isRecording}
+            >
+              Image
+            </Button>
           </div>
         </form>
       </CardBody>
