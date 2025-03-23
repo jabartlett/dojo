@@ -28,6 +28,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
+  const editorId = 'assistantTextInput';
+
+
   const handleFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (inputValue.trim() === '') return;
