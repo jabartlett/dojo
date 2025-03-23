@@ -3,7 +3,7 @@ import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody } from '@progress/kendo-react-layout';
 import { SvgIcon } from '@progress/kendo-react-common';
-import { microphoneIcon, stopIcon } from '@progress/kendo-svg-icons';
+import { circleIcon, stopIcon } from '@progress/kendo-svg-icons';
 
 
 interface ChatInterfaceProps {
@@ -124,7 +124,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               title={isRecording ? "Stop recording" : "Start recording"}
               disabled={isTyping}
             >
-              <SvgIcon icon={isRecording ? stopIcon : microphoneIcon} />
+              <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
             </Button>
             <Input
               value={inputValue}
