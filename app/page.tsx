@@ -34,16 +34,6 @@ export default function Home() {
     };
   }, []);
 
-  // Custom styles for the progress bar
-  const progressBarStyles = {
-    progressBarWrapper: {
-      borderColor: '#e6e6e6'
-    },
-    progressBar: {
-      backgroundColor: '#121212' // Set the progress bar color to #121212
-    }
-  };
-
   return (
     <div>
       <AppHeader />
@@ -58,10 +48,7 @@ export default function Home() {
           <h2>Loading Video Chat Application</h2>
           <p>Please wait while we set up your communication environment...</p>
           <div style={{ margin: '2rem 0' }}>
-            <ProgressBar 
-              value={progress} 
-              style={progressBarStyles}
-            />
+            <ProgressBar value={progress} />
           </div>
           <p>{progress}% complete</p>
         </div>
