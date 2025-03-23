@@ -143,7 +143,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
             </Button>
             <Button 
               type="button"
-              onClick={handleImageUpload}
+              onClick={onSendImage}
               disabled={isTyping || isRecording}
             >
               <SvgIcon icon={imageIcon} />
