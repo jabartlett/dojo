@@ -79,8 +79,6 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  // ... existing code ...
-
   const transcribeAudio = async (audioBlob: Blob) => {
     try {
       setIsTyping(true);
@@ -129,7 +127,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
             <FloatingLabel
-              label={'Floating Label'}
+              label={'Ask the AI assistant...'}
               editorId={editorId}
               editorValue={inputValue}
               style={{ width: '100%', marginTop: '0.5rem' }}
@@ -138,7 +136,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 value={inputValue}
                 onChange={(e: any) => setInputValue(e.target.value)}
                 className="k-flex-grow w-full"
-                placeholder="Ask the AI assistant..."
+                // placeholder="Ask the AI assistant..."
                 disabled={isTyping || isRecording}
                 id={editorId}
               />
