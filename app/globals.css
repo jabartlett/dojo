@@ -1,11 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --kendo-primary: #121212 !important;
-  --kendo-primary-hover: #2a2a2a !important;
-  --kendo-primary-active: #000000 !important;
-  --kendo-primary-contrast: #ffffff !important;
-}
 
 /* styles/webrtc.css */
 

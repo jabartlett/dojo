@@ -37,7 +37,7 @@ export default function Home() {
   return (
     <div>
       <AppHeader />
-      
+      <ProgressBar value={progress} />
       {loading ? (
         <div className="loading-container" style={{ 
           padding: '2rem', 
