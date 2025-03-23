@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
+  console.log('trying to transcribe audio');
   try {
     // Get the form data from the request
     const formData = await req.formData();
@@ -19,6 +20,9 @@ export async function POST(req: NextRequest) {
     // Convert the audio file to an ArrayBuffer
     const arrayBuffer = await audioFile.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
+
+    console.log('attempting to transcribe audio with model:', model);
+    console.log('returnTimestamps:', returnTimestamps);
     
     // Construct the API URL with parameters
     const url = new URL('https://router.huggingface.co/hf-inference/v1/speech-recognition');
@@ -43,6 +47,8 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await response.json();
+
+    console.log('result', result)
     
     // Return the transcription
     return NextResponse.json({
