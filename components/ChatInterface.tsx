@@ -123,7 +123,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               className="k-button-md"
               themeColor={isRecording ? "error" : "primary"}
               onClick={isRecording ? stopRecording : startRecording}
-              title={isRecording ? "Stop recording" : "Start recording"}
+              title={isRecording ? "Stop" : "Transcribe"}
               disabled={isTyping}
             >
               <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
