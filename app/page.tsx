@@ -48,7 +48,7 @@ export default function Home() {
           <h2>Loading Video Chat Application</h2>
           <p>Please wait while we set up your communication environment...</p>
           <div style={{ margin: '2rem 0' }}>
-            <ProgressBar value={progress} />
+            <ProgressBar value={progress} style={{background:'#121212;'}} />
           </div>
           <p>{progress}% complete</p>
         </div>
