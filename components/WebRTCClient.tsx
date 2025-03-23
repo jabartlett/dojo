@@ -27,6 +27,8 @@ export default function WebRTCClient() {
     const [showSuccessNotification, setShowSuccessNotification] = useState(false);
     const [showErrorNotification, setShowErrorNotification] = useState(false);
     const [notificationMessage, setNotificationMessage] = useState('');
+    const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+
 
 
     // Reference to our WebRTC service
