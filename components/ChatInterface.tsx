@@ -127,7 +127,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               disabled={isTyping}
             >
               <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
-              {isRecording ? "Stop" : "Record"}
+              {isRecording ? "Stop" : "Transcribe"}
             </Button>
             <FloatingLabel
               label={'Ask the AI assistant...'}
