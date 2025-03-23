@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const audioBuffer = Buffer.from(arrayBuffer);
     
     // Get your Hugging Face API key from environment variables
-    const HF_API_KEY = process.env.HUGGING_FACE_API_KEY;
+    const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
     
     if (!HF_API_KEY) {
       console.error('HUGGING_FACE_API_KEY is not defined in environment variables');
@@ -55,6 +55,6 @@ export async function POST(req: NextRequest) {
     
   } catch (error) {
     console.error('Error transcribing audio:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
