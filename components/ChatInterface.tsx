@@ -117,7 +117,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     <Card id="chat-form">
       <CardBody>
         <form onSubmit={handleFormSubmit} className="k-form k-d-flex k-gap-4">
-          <div className="k-d-flex k-gap-2 k-flex-grow w-full">
+          <div className="k-d-flex k-gap-2 k-flex-grow w-full" style={{alignItems: 'center'}}>
             <Button
               type="button"
               className="k-button-md"
@@ -127,13 +127,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               disabled={isTyping}
             >
               <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
-              {isRecording ? "Stop Recording" : "Start Recording"}
+              {isRecording ? "Stop" : "Record"}
             </Button>
             <FloatingLabel
               label={'Ask the AI assistant...'}
               editorId={editorId}
               editorValue={inputValue}
-              style={{ width: '100%', marginTop: '0.5rem' }}
+              style={{ width: '100%', marginTop: '-1.2rem' }}
             >
               <Input
                 value={inputValue}
