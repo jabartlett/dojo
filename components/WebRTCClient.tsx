@@ -6,6 +6,9 @@ import { Button } from '@progress/kendo-react-buttons';
 import { MediaControls } from './MediaControls';
 import { ChatInterface, ChatLog } from './ChatInterface';
 import { WebRTCService } from '@/lib/services/WebRTCService';
+import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
+import { Fade } from '@progress/kendo-react-animation';
+
 
 export default function WebRTCClient() {
     const selfVideoRef = useRef<HTMLVideoElement>(null!);
@@ -19,6 +22,10 @@ export default function WebRTCClient() {
     const [isMounted, setIsMounted] = useState(false);
     const [isProcessingMessage, setIsProcessingMessage] = useState(false);
     const [isRecording, setIsRecording] = useState(false);
+    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+    const [showErrorNotification, setShowErrorNotification] = useState(false);
+    const [notificationMessage, setNotificationMessage] = useState('');
+
 
     // Reference to our WebRTC service
     const webRTCServiceRef = useRef<WebRTCService | null>(null);
@@ -197,6 +204,13 @@ export default function WebRTCClient() {
             console.log('Joining the call...');
             webRTCServiceRef.current.joinCall();
             setInCall(true);
+            // Show success notification
+            setNotificationMessage('Successfully joined the call!');
+            setShowSuccessNotification(true);
+            // Auto-hide notification after 5 seconds
+            setTimeout(() => {
+                setShowSuccessNotification(false);
+            }, 5000);
         } else {
             console.log('Leaving the call...');
             webRTCServiceRef.current.leaveCall();
@@ -326,6 +340,41 @@ export default function WebRTCClient() {
                     </CardTitle>
                 </CardHeader>
             </Card>
+
+            {/* Notification Group */}
+            <NotificationGroup
+                style={{
+                    position: 'fixed',
+                    right: 20,
+                    bottom: 20,
+                    alignItems: 'flex-start',
+                    flexWrap: 'wrap-reverse',
+                    zIndex: 9999
+                }}
+            >
+                <Fade>
+                    {showSuccessNotification && (
+                        <Notification
+                            type={{ style: 'success', icon: true }}
+                            closable={true}
+                            onClose={() => setShowSuccessNotification(false)}
+                        >
+                            <span>{notificationMessage}</span>
+                        </Notification>
+                    )}
+                </Fade>
+                <Fade>
+                    {showErrorNotification && (
+                        <Notification
+                            type={{ style: 'error', icon: true }}
+                            closable={true}
+                            onClose={() => setShowErrorNotification(false)}
+                        >
+                            <span>Error: {notificationMessage}</span>
+                        </Notification>
+                    )}
+                </Fade>
+            </NotificationGroup>
 
             <div className="k-my-4">
                 <div className="layout-container" style={{ display: 'flex', gap: '20px' }}>
