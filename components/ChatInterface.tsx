@@ -29,6 +29,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const tooltipRef = useRef<Tooltip>(null);
+
 
   const editorId = 'assistantTextInput';
 
@@ -120,9 +122,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
       <CardBody>
         <form onSubmit={handleFormSubmit} className="k-form k-d-flex k-gap-4">
           <div className="k-d-flex k-gap-2 k-flex-grow w-full" style={{ alignItems: 'center' }}>
-            <Tooltip
-              title="Please make sure you have allowed access to your microphone and have the Mic toggle On to use transcription"
-              position="top"
+            <div
+              onMouseOver={event => tooltipRef.current && tooltipRef.current.handleMouseOver(event)}
+              onMouseOut={event => tooltipRef.current && tooltipRef.current.handleMouseOut(event)}
             >
               <Button
                 type="button"
@@ -135,7 +137,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
                 {isRecording ? "Stop" : "Transcribe"}
               </Button>
-            </Tooltip>
+              <Tooltip
+                ref={tooltipRef}
+                anchorElement="target"
+                position="top"
+                openDelay={300}
+              />
+            </div>
             <FloatingLabel
               label={'Ask the AI assistant...'}
               editorId={editorId}
