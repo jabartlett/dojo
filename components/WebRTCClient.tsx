@@ -103,19 +103,6 @@ export default function WebRTCClient() {
                 max-width: 80%;
                 word-wrap: break-word;
             }
-            #chat-log li.self {
-                background-color: #e7f1ff;
-                margin-left: auto;
-            }
-            #chat-log li.peer {
-                background-color: #f0f0f0;
-                margin-right: auto;
-            }
-            #chat-log li.llm, #chat-log li.peer-llm {
-                background-color: #f0f7ff;
-                border-left: 4px solid #0077cc;
-                margin-right: auto;
-            }
             #chat-log li.system-message {
                 background-color: #f5f5f5;
                 color: #666;
