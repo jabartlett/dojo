@@ -5,6 +5,8 @@ import { Card, CardBody } from '@progress/kendo-react-layout';
 import { SvgIcon } from '@progress/kendo-react-common';
 import { circleIcon, stopIcon, imageIcon } from '@progress/kendo-svg-icons';
 import { FloatingLabel } from '@progress/kendo-react-labels';
+import { Tooltip } from '@progress/kendo-react-tooltip';
+
 
 
 interface ChatInterfaceProps {
@@ -117,18 +119,23 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     <Card id="chat-form">
       <CardBody>
         <form onSubmit={handleFormSubmit} className="k-form k-d-flex k-gap-4">
-          <div className="k-d-flex k-gap-2 k-flex-grow w-full" style={{alignItems: 'center'}}>
-            <Button
-              type="button"
-              className="k-button-md"
-              themeColor={isRecording ? "error" : "primary"}
-              onClick={isRecording ? stopRecording : startRecording}
-              title={isRecording ? "Stop" : "Transcribe"}
-              disabled={isTyping}
+          <div className="k-d-flex k-gap-2 k-flex-grow w-full" style={{ alignItems: 'center' }}>
+            <Tooltip
+              title="Please make sure you have allowed access to your microphone and have the Mic toggle On to use transcription"
+              position="top"
             >
-              <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
-              {isRecording ? "Stop" : "Transcribe"}
-            </Button>
+              <Button
+                type="button"
+                className="k-button-md"
+                themeColor={isRecording ? "error" : "primary"}
+                onClick={isRecording ? stopRecording : startRecording}
+                title={isRecording ? "Stop" : "Transcribe"}
+                disabled={isTyping}
+              >
+                <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
+                {isRecording ? "Stop" : "Transcribe"}
+              </Button>
+            </Tooltip>
             <FloatingLabel
               label={'Ask the AI assistant...'}
               editorId={editorId}
