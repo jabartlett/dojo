@@ -73,7 +73,7 @@
 }
 
 #chat-log li.self {
-  background-color: #e3f2fd;
+  background-color: #efefef;
   margin-left: auto;
   text-align: right;
 }
@@ -193,10 +193,10 @@ body.disconnected {
 }
 
 .llm-message {
-  background-color: #f5f0ff;
+  background-color: #e0e0e0;
   margin-right: auto;
   margin-left: 20px;
-  border-left: 3px solid #8a63d2;
+  border-left: 3px solid #cecece;
 }
 
 .system-message {
