@@ -3,7 +3,7 @@ import { Input } from '@progress/kendo-react-inputs';
 import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody } from '@progress/kendo-react-layout';
 import { SvgIcon } from '@progress/kendo-react-common';
-import { circleIcon, stopIcon } from '@progress/kendo-svg-icons';
+import { circleIcon, stopIcon, imageIcon } from '@progress/kendo-svg-icons';
 
 
 interface ChatInterfaceProps {
@@ -124,29 +124,30 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               title={isRecording ? "Stop recording" : "Start recording"}
               disabled={isTyping}
             >
-              <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
+              <SvgIcon icon={isRecording ? cancelIcon : circleIcon} />
+              {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
-            <Input
+            <Input 
               value={inputValue}
-              onChange={(e: any) => setInputValue(e.target.value)}
+              onChange={(e:any) => setInputValue(e.target.value)}
               className="k-flex-grow w-full"
               placeholder="Ask the AI assistant..."
               disabled={isTyping || isRecording}
             />
-            <Button
-              type="submit"
-              themeColor="primary"
+            <Button 
+              type="submit" 
+              themeColor="primary" 
               disabled={isTyping || isRecording || inputValue.trim() === ''}
             >
               {isTyping ? 'Sending...' : 'Send'}
             </Button>
-            <Button
+            <Button 
               type="button"
-              icon="image"
-              onClick={onSendImage}
+              onClick={handleImageUpload}
               disabled={isTyping || isRecording}
             >
-              Image
+              <SvgIcon icon={imageIcon} />
+              Upload Image
             </Button>
           </div>
         </form>
