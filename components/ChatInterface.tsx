@@ -4,6 +4,7 @@ import { Button } from '@progress/kendo-react-buttons';
 import { Card, CardBody } from '@progress/kendo-react-layout';
 import { SvgIcon } from '@progress/kendo-react-common';
 import { circleIcon, stopIcon, imageIcon } from '@progress/kendo-svg-icons';
+import { FloatingLabel } from '@progress/kendo-react-labels';
 
 
 interface ChatInterfaceProps {
@@ -127,21 +128,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
               {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
-            <Input 
-              value={inputValue}
-              onChange={(e:any) => setInputValue(e.target.value)}
-              className="k-flex-grow w-full"
-              placeholder="Ask the AI assistant..."
-              disabled={isTyping || isRecording}
-            />
-            <Button 
-              type="submit" 
-              themeColor="primary" 
+            <FloatingLabel
+              label={'Floating Label'}
+              editorId={editorId}
+              editorValue={inputValue}
+              style={{ width: '100%', marginTop: '0.5rem' }}
+            >
+              <Input
+                value={inputValue}
+                onChange={(e: any) => setInputValue(e.target.value)}
+                className="k-flex-grow w-full"
+                placeholder="Ask the AI assistant..."
+                disabled={isTyping || isRecording}
+                id={editorId}
+              />
+            </FloatingLabel>
+            <Button
+              type="submit"
+              themeColor="primary"
               disabled={isTyping || isRecording || inputValue.trim() === ''}
             >
               {isTyping ? 'Sending...' : 'Send'}
             </Button>
-            <Button 
+            <Button
               type="button"
               onClick={onSendImage}
               disabled={isTyping || isRecording}
