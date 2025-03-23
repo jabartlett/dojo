@@ -222,3 +222,7 @@ body.disconnected {
   color: #888;
   font-size: 0.85em;
 }
+
+.k-progressbar .k-selected {
+  background: #121212 !important;
+}
