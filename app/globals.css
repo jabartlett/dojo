@@ -139,7 +139,7 @@ body.disconnected {
   background-color: #121212;
 }
 
-.k-button-solid-info, .k-button-solid-info:focus, .k-button.k-button-solid-success, .k-button.k-button-solid-error, .k-button.k-button-solid-success:focus, .k-button.k-button-solid-error:focus{
+.k-button-solid-info, .k-button-solid-info:focus, .k-button.k-button-solid-success, .k-button.k-button-solid-primary, .k-button.k-button-solid-error, .k-button.k-button-solid-success:focus, .k-button.k-button-solid-error:focus{
   background-color: #121212 !important;
   border-color: #121212 !important;
   color: #fff !important;

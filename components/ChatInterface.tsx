@@ -124,7 +124,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               title={isRecording ? "Stop recording" : "Start recording"}
               disabled={isTyping}
             >
-              <SvgIcon icon={isRecording ? cancelIcon : circleIcon} />
+              <SvgIcon icon={isRecording ? stopIcon : circleIcon} />
               {isRecording ? "Stop Recording" : "Start Recording"}
             </Button>
             <Input 
@@ -155,6 +155,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     </Card>
   );
 };
+
 
 export const ChatLog: React.FC<{ chatLogRef: React.RefObject<HTMLUListElement> }> = ({ chatLogRef }) => {
   return (
