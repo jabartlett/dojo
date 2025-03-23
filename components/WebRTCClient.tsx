@@ -8,6 +8,8 @@ import { ChatInterface, ChatLog } from './ChatInterface';
 import { WebRTCService } from '@/lib/services/WebRTCService';
 import { Notification, NotificationGroup } from '@progress/kendo-react-notification';
 import { Fade } from '@progress/kendo-react-animation';
+import { Dialog, DialogActionsBar } from '@progress/kendo-react-dialogs';
+
 
 
 export default function WebRTCClient() {
@@ -196,7 +198,6 @@ export default function WebRTCClient() {
         };
     }, [isMounted]);
 
-    // Handle call button click
     const handleCallButton = () => {
         if (!webRTCServiceRef.current) return;
 
@@ -212,10 +213,32 @@ export default function WebRTCClient() {
                 setShowSuccessNotification(false);
             }, 5000);
         } else {
-            console.log('Leaving the call...');
-            webRTCServiceRef.current.leaveCall();
-            setInCall(false);
+            // Show confirmation dialog instead of immediately leaving
+            setShowLeaveDialog(true);
         }
+    };
+
+    // Handle confirmed leave call
+    const handleLeaveCall = () => {
+        if (!webRTCServiceRef.current) return;
+
+        console.log('Leaving the call...');
+        webRTCServiceRef.current.leaveCall();
+        setInCall(false);
+        setShowLeaveDialog(false);
+
+        // Show success notification for leaving
+        setNotificationMessage('Successfully left the call!');
+        setShowSuccessNotification(true);
+        // Auto-hide notification after 5 seconds
+        setTimeout(() => {
+            setShowSuccessNotification(false);
+        }, 5000);
+    };
+
+    // Handle cancel leave call
+    const handleCancelLeave = () => {
+        setShowLeaveDialog(false);
     };
 
     // Handle toggling microphone
@@ -340,6 +363,23 @@ export default function WebRTCClient() {
                     </CardTitle>
                 </CardHeader>
             </Card>
+
+            {/* Leave Call Confirmation Dialog */}
+            {showLeaveDialog && (
+                <Dialog title={'Leave Call'} onClose={handleCancelLeave}>
+                    <p style={{ margin: '25px', textAlign: 'center' }}>
+                        Are you sure you would like to leave this call?
+                    </p>
+                    <DialogActionsBar>
+                        <Button type="button" onClick={handleCancelLeave}>
+                            Cancel
+                        </Button>
+                        <Button type="button" themeColor="error" onClick={handleLeaveCall}>
+                            Leave Call
+                        </Button>
+                    </DialogActionsBar>
+                </Dialog>
+            )}
 
             {/* Notification Group */}
             <NotificationGroup
