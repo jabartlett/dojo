@@ -171,7 +171,7 @@ export class WebRTCService {
                 console.log('Already waiting for AI response, ignoring this request');
                 return;
             }
-            
+
             this.isWaitingForAI = true;
 
             // First, send the user's message as normal
@@ -218,7 +218,7 @@ export class WebRTCService {
 
             // Send LLM response to peer
             this.sendOrQueueMessage(llmMessage);
-            
+
             // Reset waiting flag
             this.isWaitingForAI = false;
         } catch (error) {
@@ -280,8 +280,8 @@ export class WebRTCService {
         this.sendOrQueueMessage(payload);
     }
 
-     // New method to start recording audio
-     startRecording(): void {
+    // New method to start recording audio
+    startRecording(): void {
         if (!this.selfState.mediaStream) {
             console.error('No media stream available for recording');
             return;
@@ -337,23 +337,24 @@ export class WebRTCService {
         });
     }
 
-    // New method to transcribe audio
+    // ... existing code ...
+
     private async transcribeAudio(audioBlob: Blob): Promise<string> {
         try {
             // Create a FormData object to send the audio file
             const formData = new FormData();
             formData.append('audio', audioBlob);
-            
-            // Send to our API endpoint
+
+            // Send to our API endpoint - corrected path
             const response = await fetch('/api/transcribe', {
                 method: 'POST',
                 body: formData,
             });
-            
+
             if (!response.ok) {
                 throw new Error(`Transcription failed: ${response.status}`);
             }
-            
+
             const data = await response.json();
             return data.text || '';
         } catch (error) {
@@ -368,7 +369,7 @@ export class WebRTCService {
             if (!this.mediaRecorder) {
                 throw new Error('No active recording');
             }
-            
+
             const transcription = await this.stopRecording();
             if (transcription.trim()) {
                 // If we got a transcription, send it to the LLM

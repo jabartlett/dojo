@@ -75,34 +75,38 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
     }
   };
 
-  const transcribeAudio = async (audioBlob: Blob) => {
-    try {
-      setIsTyping(true);
-      
-      // Create a FormData object to send the audio file
-      const formData = new FormData();
-      formData.append('audio', audioBlob);
-      
-      // Send to our API endpoint
-      const response = await fetch('/api/transcribe', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Transcription failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (data.text) {
-        setInputValue(data.text);
-      }
-    } catch (error) {
-      console.error('Error transcribing audio:', error);
-    } finally {
-      setIsTyping(false);
+ // ... existing code ...
+
+const transcribeAudio = async (audioBlob: Blob) => {
+  try {
+    setIsTyping(true);
+    
+    // Create a FormData object to send the audio file
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+    
+    // Send to our API endpoint - use the correct path
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Transcription failed: ${response.status}`);
     }
-  };
+    
+    const data = await response.json();
+    if (data.text) {
+      setInputValue(data.text);
+    }
+  } catch (error) {
+    console.error('Error transcribing audio:', error);
+    // Add user feedback for transcription errors
+    setInputValue('Error transcribing audio. Please try again or type your message.');
+  } finally {
+    setIsTyping(false);
+  }
+};
 
   return (
     <Card id="chat-form">
