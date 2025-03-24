@@ -22,51 +22,48 @@ export async function POST(req: NextRequest) {
       }, { status: 200 }); // Using 200 so client handles it gracefully
     }
     
-    // Format messages for the model
+    // Format messages for the model - using the proper format for Hugging Face API
     const formattedMessages = chatHistory ? [...chatHistory] : [];
+    formattedMessages.push({ role: 'user', content: message });
     
-    // Avoid duplicating the last message
-    if (formattedMessages.length === 0 || 
-        formattedMessages[formattedMessages.length - 1].content !== message) {
-      formattedMessages.push({ role: 'user', content: message });
-    }
+    console.log('formatted messages', formattedMessages);
     
-    // Get your Hugging Face API key from environment variables
-    const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
-    
-    // Call the Hugging Face API for chat
+    // Use direct fetch to Hugging Face API
     const response = await fetch(
-      'https://api-inference.huggingface.co/models/microsoft/phi-3-mini-4k-instruct',
+      "https://router.huggingface.co/nebius/v1/chat/completions",
       {
-        method: 'POST',
         headers: {
-          'Authorization': `Bearer ${HF_API_KEY}`,
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
+          "Content-Type": "application/json",
         },
+        method: "POST",
         body: JSON.stringify({
-          inputs: {
-            messages: formattedMessages
-          }
+          "model": "microsoft/phi-4",
+          "messages": formattedMessages, // Use the formatted messages directly
+          "max_tokens": 500,
+          "stream": false
         }),
       }
     );
     
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`API error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response.status} ${response.statusText}`);
     }
     
     const result = await response.json();
+    console.log('API response:', result);
     
     // Extract generated text from response
-    const generatedText = result.generated_text || result[0]?.generated_text || '';
+    const generatedText = result.choices[0].message.content;
+    
+    console.log('generatedText', generatedText);
     
     // Return the generated text
     return NextResponse.json({
       response: generatedText,
       metadata: {
         timestamp: new Date().toISOString(),
-        model: 'microsoft/phi-3-mini-4k-instruct'
+        model: 'microsoft/phi-4'
       }
     });
   } catch (error) {
