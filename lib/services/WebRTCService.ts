@@ -117,15 +117,54 @@ export class WebRTCService {
         return enabled_state;
     }
 
-    joinCall(): void {
-        const serverUrl = "https://glacial-chamber-45902-8ad625a954fa.herokuapp.com/";
+    // In your WebRTCService.ts file
 
-        this.socket = io(`${serverUrl}/${this.namespace}`, {
+    joinCall(): void {
+        // Use the Heroku URL without specifying a port
+        const serverUrl = "https://glacial-chamber-45902-8ad625a954fa.herokuapp.com";
+
+        // Clean the namespace - ensure it's exactly 7 digits without any special characters
+        let cleanNamespace = this.namespace;
+
+        // Remove any non-digit characters (like #)
+        cleanNamespace = cleanNamespace.replace(/\D/g, '');
+
+        // If the namespace is not 7 digits, generate a new one
+        if (cleanNamespace.length !== 7) {
+            cleanNamespace = Math.floor(1000000 + Math.random() * 9000000).toString();
+            console.log(`Generated new 7-digit namespace: ${cleanNamespace}`);
+        }
+
+        console.log(`Connecting to Socket.IO server at: ${serverUrl}/${cleanNamespace}`);
+
+        // Create the socket connection with the proper configuration
+        this.socket = io(`${serverUrl}/${cleanNamespace}`, {
             path: '/api/socket',
             autoConnect: true,
-            transports: ['websocket'], // Force WebSocket transport
+            transports: ['websocket'],
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000
         });
 
+        // Add error handling for debugging
+        this.socket.on('connect', () => {
+            console.log('Successfully connected to Socket.IO server');
+        });
+
+        this.socket.on('connect_error', (error) => {
+            console.error('Socket connection error:', error);
+        });
+
+        this.socket.on('connect_timeout', () => {
+            console.error('Socket connection timeout');
+        });
+
+        this.socket.on('error', (error) => {
+            console.error('Socket error:', error);
+        });
+
+        // Register the rest of your socket callbacks
         this.registerSocketCallbacks();
     }
 
