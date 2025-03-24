@@ -2,8 +2,8 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 
 // Environment variables
-const hostname = process.env.HOST || "localhost";
-const port = process.env.PORT || 3001;
+const hostname = process.env.HOST || "0.0.0.0";
+const port = process.env.PORT || 3000;
 
 // Create the HTTP server
 const server = createServer((req, res) => {
@@ -15,6 +15,10 @@ const server = createServer((req, res) => {
 const io = new Server(server, {
     path: "/api/socket",
     addTrailingSlash: false,
+    cors: {
+        origin: "*",  // In production, specify your actual frontend domain
+        methods: ["GET", "POST"]
+    }
 });
 
 // Handle room-based namespaces (7-digit IDs)
@@ -58,7 +62,7 @@ mp_namespaces.on("connect", (socket) => {
 });
 
 // Start the server
-server.listen(port, (err) => {
+server.listen(port, hostname, (err) => {
     if (err) throw err;
     console.log(`> Server ready on http://${hostname}:${port}`);
 });
