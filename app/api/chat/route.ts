@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkChatLimit } from '@/lib/rateLimit';
 
 export const runtime = 'edge';
 
 export async function POST(req: NextRequest) {
   try {
     // Parse request body
-    const { message, chatHistory } = await req.json();
+    const { message, chatHistory, sessionId = 'default' } = await req.json();
     
     if (!message) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
@@ -13,54 +14,65 @@ export async function POST(req: NextRequest) {
     
     console.log('message', message, 'chatHistory', chatHistory);
     
-    // Format messages for the model - using the proper format for Hugging Face API
+    // Check rate limit
+    if (!checkChatLimit(sessionId)) {
+      return NextResponse.json({
+        response: "You've already used your chat quota. You only get one test of the AI because I am poor.",
+        limitExceeded: true
+      }, { status: 200 }); // Using 200 so client handles it gracefully
+    }
+    
+    // Format messages for the model
     const formattedMessages = chatHistory ? [...chatHistory] : [];
-    formattedMessages.push({ role: 'user', content: message });
     
-    console.log('formatted messages', formattedMessages);
+    // Avoid duplicating the last message
+    if (formattedMessages.length === 0 || 
+        formattedMessages[formattedMessages.length - 1].content !== message) {
+      formattedMessages.push({ role: 'user', content: message });
+    }
     
-    // Use direct fetch to Hugging Face API
+    // Get your Hugging Face API key from environment variables
+    const HF_API_KEY = process.env.HUGGINGFACE_API_KEY;
+    
+    // Call the Hugging Face API for chat
     const response = await fetch(
-      "https://router.huggingface.co/nebius/v1/chat/completions",
+      'https://api-inference.huggingface.co/models/microsoft/phi-3-mini-4k-instruct',
       {
+        method: 'POST',
         headers: {
-          Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          "Content-Type": "application/json",
+          'Authorization': `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json',
         },
-        method: "POST",
         body: JSON.stringify({
-          "model": "microsoft/phi-4",
-          "messages": formattedMessages, // Use the formatted messages directly
-          "max_tokens": 500,
-          "stream": false
+          inputs: {
+            messages: formattedMessages
+          }
         }),
       }
     );
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
     const result = await response.json();
-    console.log('API response:', result);
     
     // Extract generated text from response
-    const generatedText = result.choices[0].message.content;
-    
-    console.log('generatedText', generatedText);
+    const generatedText = result.generated_text || result[0]?.generated_text || '';
     
     // Return the generated text
     return NextResponse.json({
       response: generatedText,
       metadata: {
         timestamp: new Date().toISOString(),
-        model: 'microsoft/phi-4'
+        model: 'microsoft/phi-3-mini-4k-instruct'
       }
     });
   } catch (error) {
     console.error('Text generation API error:', error);
     return NextResponse.json({
-      error: 'Failed to process message',
+      error: String(error),
       response: "I'm sorry, I'm having trouble processing your request right now."
     }, { status: 500 });
   }
