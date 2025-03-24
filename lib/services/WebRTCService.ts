@@ -118,7 +118,7 @@ export class WebRTCService {
     }
 
     joinCall(): void {
-        const serverUrl = "https://verbose-couscous-g476v6r9pp5wcwx5x-3001.app.github.dev";
+        const serverUrl = "https://glacial-chamber-45902-8ad625a954fa.herokuapp.com/";
 
         this.socket = io(`${serverUrl}/${this.namespace}`, {
             path: '/api/socket',
