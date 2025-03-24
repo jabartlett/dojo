@@ -13,15 +13,28 @@ export async function POST(req: NextRequest) {
     
     console.log('message', message, 'chatHistory', chatHistory);
     
-    // Format messages for the model - using the proper format for Hugging Face API
+    // Format messages for the model
     const formattedMessages = chatHistory ? [...chatHistory] : [];
-    formattedMessages.push({ role: 'user', content: message });
+    
+    // Avoid duplicating the last message
+    if (formattedMessages.length === 0 || 
+        formattedMessages[formattedMessages.length - 1].content !== message) {
+      formattedMessages.push({ role: 'user', content: message });
+    }
     
     console.log('formatted messages', formattedMessages);
     
-    // Use direct fetch to Hugging Face API
+    // Prepare conversation history in a format suitable for text generation
+    let prompt = "";
+    for (const msg of formattedMessages) {
+      const role = msg.role === 'user' ? 'User' : 'Assistant';
+      prompt += `${role}: ${msg.content}\n`;
+    }
+    prompt += `Assistant:`;
+    
+    // Use a free model instead of phi-4
     const response = await fetch(
-      "https://router.huggingface.co/nebius/v1/chat/completions",
+      "https://api-inference.huggingface.co/models/TinyLlama/TinyLlama-1.1B-Chat-v1.0",
       {
         headers: {
           Authorization: `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
@@ -29,38 +42,40 @@ export async function POST(req: NextRequest) {
         },
         method: "POST",
         body: JSON.stringify({
-          "model": "microsoft/phi-4",
-          "messages": formattedMessages, // Use the formatted messages directly
-          "max_tokens": 500,
-          "stream": false
+          inputs: prompt,
+          parameters: {
+            max_new_tokens: 500,
+            temperature: 0.7,
+            top_p: 0.95,
+            do_sample: true,
+            return_full_text: false
+          }
         }),
       }
     );
     
     if (!response.ok) {
-      throw new Error(`API error: ${response.status} ${response.statusText}`);
+      const errorText = await response.text();
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
     const result = await response.json();
-    console.log('API response:', result);
     
     // Extract generated text from response
-    const generatedText = result.choices[0].message.content;
-    
-    console.log('generatedText', generatedText);
+    const generatedText = Array.isArray(result) ? result[0].generated_text : result.generated_text;
     
     // Return the generated text
     return NextResponse.json({
       response: generatedText,
       metadata: {
         timestamp: new Date().toISOString(),
-        model: 'microsoft/phi-4'
+        model: 'TinyLlama/TinyLlama-1.1B-Chat-v1.0'
       }
     });
   } catch (error) {
     console.error('Text generation API error:', error);
     return NextResponse.json({
-      error: 'Failed to process message',
+      error: String(error),
       response: "I'm sorry, I'm having trouble processing your request right now."
     }, { status: 500 });
   }
