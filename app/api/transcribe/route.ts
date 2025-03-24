@@ -12,6 +12,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
     }
     
+    console.log('attempting to transcribe audio with model: openai/whisper-large-v3');
+    
     // Convert the file to an array buffer
     const arrayBuffer = await audioFile.arrayBuffer();
     const audioBuffer = Buffer.from(arrayBuffer);
@@ -24,15 +26,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
     }
     
-    // Use a free model instead of whisper-large-v3
-    console.log('attempting to transcribe audio with model: facebook/wav2vec2-base-960h');
-    
+    // Use the direct model endpoint instead of the router endpoint
     const response = await fetch(
-      "https://api-inference.huggingface.co/models/facebook/wav2vec2-base-960h",
+      "https://api-inference.huggingface.co/models/openai/whisper-large-v3",
       {
         headers: {
           Authorization: `Bearer ${HF_API_KEY}`,
-          "Content-Type": "audio/wav",
+          "Content-Type": "audio/wav", // Adjust based on your audio format
         },
         method: "POST",
         body: audioBuffer,
@@ -45,17 +45,16 @@ export async function POST(req: NextRequest) {
     }
     
     const result = await response.json();
+
+    console.log('result', result)
     
     return NextResponse.json({ 
       text: result.text || '',
-      language: 'en', // This model only supports English
+      language: result.language || '',
     });
     
   } catch (error) {
     console.error('Error transcribing audio:', error);
-    return NextResponse.json({ 
-      error: String(error),
-      message: "Failed to transcribe audio. Please try again."
-    }, { status: 500 });
+    return NextResponse.json({ error: error }, { status: 500 });
   }
 }
